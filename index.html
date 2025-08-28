@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CNK CRM Pro</title>
+    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQMAAADPCAMAAAD/A/dMAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAJcEhZcwAACxIAAAsSAdLdfvwAAABnUExURQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK2G+bEAAAAidFJOUwD2/v7+AgH+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+2jwgvAAAAzxJREFUeNrt3dFu2kAUANHi4CIhMv//W11PUtLuVbJzihflLGBiZ1y6/dw2y5RhGCZomjJMGKaJmiYMk4ZpomYJw6QBz1M0Gv3+v/2kKMF6hRkG3kL37+vnM/vBq2k2k1/n4evvF2DY4L0cZ3iPEQbbp6mPqYW9/vC9Gwa/f8s5Q2D4fX7/Vgx/f/8+3f67iYMMQz+1DMPQz7QMQz/TLEN/pEwD/kLGEhhy2eIZhp/P7GcaJgyyDF8/C2A/0zBhcAyD/QzD3/MAhgf/mf0cwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUN/s/s5hgkG+5n2Mww/n3/fXoRh+Pms+vM5hgkG+5n2geEfwzD0M+0yDH2sIQb7mcYPDUP/L/wD8cI0kMMsFIMAAAAASUVORK5CYII=" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+      :root {
+        /* Light Theme (Main Content) */
+        --cnk-bg-light: #f1f5f9; /* slate-100 */
+        --cnk-panel-light: #ffffff; /* white */
+        --cnk-border-light: #e2e8f0; /* slate-200 */
+        --cnk-txt-primary-light: #0f172a; /* slate-900 */
+        --cnk-txt-secondary-light: #475569; /* slate-600 */
+        --cnk-txt-muted-light: #94a3b8; /* slate-400 */
+
+        /* Dark Theme (Sidebar) */
+        --cnk-sidebar-dark: #1e293b; /* slate-800 */
+        --cnk-sidebar-txt-dark: #cbd5e1; /* slate-300 */
+        --cnk-sidebar-txt-muted-dark: #94a3b8; /* slate-400 */
+
+        /* Accent Colors */
+        --cnk-accent-primary: #3b82f6; /* blue-500 */
+        --cnk-accent-yellow: #f59e0b; /* amber-500 */
+        --cnk-accent-pink: #ec4899; /* pink-500 */
+        --cnk-accent-green: #10b981; /* emerald-500 */
+      }
+      body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--cnk-bg-light);
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+            },
+            colors: {
+              'cnk-bg-light': 'var(--cnk-bg-light)',
+              'cnk-panel-light': 'var(--cnk-panel-light)',
+              'cnk-border-light': 'var(--cnk-border-light)',
+              'cnk-txt-primary-light': 'var(--cnk-txt-primary-light)',
+              'cnk-txt-secondary-light': 'var(--cnk-txt-secondary-light)',
+              'cnk-txt-muted-light': 'var(--cnk-txt-muted-light)',
+              'cnk-sidebar-dark': 'var(--cnk-sidebar-dark)',
+              'cnk-sidebar-txt-dark': 'var(--cnk-sidebar-txt-dark)',
+              'cnk-sidebar-txt-muted-dark': 'var(--cnk-sidebar-txt-muted-dark)',
+              'cnk-accent-primary': 'var(--cnk-accent-primary)',
+              'cnk-accent-yellow': 'var(--cnk-accent-yellow)',
+              'cnk-accent-pink': 'var(--cnk-accent-pink)',
+              'cnk-accent-green': 'var(--cnk-accent-green)',
+            }
+          }
+        }
+      }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "dexie": "https://esm.sh/dexie@3.2.4",
+    "dexie-react-hooks": "https://esm.sh/dexie-react-hooks@1.1.7?deps=dexie@3.2.4,react@18.2.0",
+    "xlsx": "https://esm.sh/xlsx@0.18.5",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
+    "jspdf-autotable": "https://esm.sh/jspdf-autotable@3.5.28",
+    "html2canvas": "https://esm.sh/html2canvas@1.4.1",
+    "uuid": "https://esm.sh/uuid@9.0.1",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
