@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Page } from '../../types';
+import { Page, UserRole } from '../../types';
 import { ViewState } from '../../App';
 import CnkLogo from '../assets/CnkLogo';
 
@@ -9,7 +9,7 @@ interface NavLink {
     page: Page;
     labelKey: string;
     icon: string;
-    adminOnly?: boolean;
+    roles?: UserRole[]; // If not set, visible to all
 }
 
 const NAV_LINKS: NavLink[] = [
@@ -18,16 +18,17 @@ const NAV_LINKS: NavLink[] = [
     { page: 'appointments', labelKey: 'appointmentsTitle', icon: 'fas fa-calendar-check' },
     { page: 'gorusme-formu', labelKey: 'interviewFormsTitle', icon: 'fas fa-file-signature' },
     { page: 'teklif-yaz', labelKey: 'offerManagement', icon: 'fas fa-file-invoice-dollar' },
-    { page: 'mutabakat', labelKey: 'reconciliation', icon: 'fas fa-handshake' },
+    { page: 'mutabakat', labelKey: 'reconciliation', icon: 'fas fa-handshake', roles: ['admin', 'muhasebe'] },
     { page: 'email-taslaklari', labelKey: 'emailDrafts', icon: 'fas fa-envelope-open-text' },
     { page: 'yapay-zeka', labelKey: 'aiHubTitle', icon: 'fas fa-robot' },
-    { page: 'raporlar', labelKey: 'reports', icon: 'fas fa-chart-line', adminOnly: true },
-    { page: 'personnel', labelKey: 'personnelManagement', icon: 'fas fa-user-cog', adminOnly: true },
-    { page: 'konum-takip', labelKey: 'locationTracking', icon: 'fas fa-map-marker-alt', adminOnly: true },
-    { page: 'erp-entegrasyonu', labelKey: 'erpIntegration', icon: 'fas fa-cogs', adminOnly: true },
+    { page: 'raporlar', labelKey: 'reports', icon: 'fas fa-chart-line', roles: ['admin'] },
+    { page: 'audit-log', labelKey: 'auditLog', icon: 'fas fa-history', roles: ['admin'] },
+    { page: 'personnel', labelKey: 'personnelManagement', icon: 'fas fa-user-cog', roles: ['admin'] },
+    { page: 'konum-takip', labelKey: 'locationTracking', icon: 'fas fa-map-marker-alt', roles: ['admin'] },
+    { page: 'erp-entegrasyonu', labelKey: 'erpIntegration', icon: 'fas fa-cogs', roles: ['admin', 'muhasebe'] },
     { page: 'hesaplama-araclari', labelKey: 'calculationTools', icon: 'fas fa-calculator' },
     { page: 'profile', labelKey: 'profileTitle', icon: 'fas fa-user' },
-    { page: 'ai-ayarlari', labelKey: 'aiSettings', icon: 'fas fa-cogs', adminOnly: true },
+    { page: 'ai-ayarlari', labelKey: 'aiSettings', icon: 'fas fa-cogs', roles: ['admin'] },
 ];
 
 interface SidebarLeftProps {
@@ -60,7 +61,7 @@ const SidebarLeft = ({ view, setView, isOpen, setIsOpen }: SidebarLeftProps) => 
                 </div>
                 <ul className="flex-grow space-y-2 p-3">
                     {NAV_LINKS.map(link => {
-                        if (link.adminOnly && currentUser?.role !== 'admin') {
+                        if (link.roles && !link.roles.includes(currentUser!.role)) {
                             return null;
                         }
                         const isActive = view.page === link.page;

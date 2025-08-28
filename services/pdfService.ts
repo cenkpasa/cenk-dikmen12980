@@ -143,9 +143,9 @@ export const downloadOfferAsPdf = async (offer: Offer, customer: Customer | unde
 
 const InfoRow = (label: string, value: string) => `
     <tr>
-        <td style="padding: 1px 0; font-weight: normal; width: 100px;">${label}</td>
-        <td style="padding: 1px 0; font-weight: normal; width: 10px;">:</td>
-        <td style="padding: 1px 0; font-weight: normal;">${value || ''}</td>
+        <td style="padding: 2px 0; font-weight: normal; width: 100px;">${label}</td>
+        <td style="padding: 2px 0; font-weight: normal; width: 10px;">:</td>
+        <td style="padding: 2px 0; font-weight: normal;">${value || ''}</td>
     </tr>
 `;
 
@@ -153,52 +153,55 @@ export const getReconciliationHtml = (reconciliation: Reconciliation, customer: 
     const today = new Date().toLocaleDateString('tr-TR');
     
     return `
-    <div style="font-family: Arial, sans-serif; width: 210mm; min-height: 297mm; padding: 15mm; box-sizing: border-box; font-size: 11pt; color: #333;">
+    <div style="font-family: Arial, sans-serif; width: 210mm; min-height: 297mm; padding: 15mm; box-sizing: border-box; font-size: 11pt; color: #333; display: flex; flex-direction: column;">
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <tr>
-                <td style="text-align: center; font-size: 16pt; font-weight: bold; padding-bottom: 10px;">${t('reconciliationLetterTitle')}</td>
-                <td style="text-align: right; font-size: 11pt;">Tarih : ${today}</td>
+                <td style="text-align: center; font-size: 16pt; font-weight: bold; padding-bottom: 20px;" colspan="2">Mutabakat Mektubu</td>
+            </tr>
+            <tr>
+                 <td style="width: 50%;"></td>
+                 <td style="text-align: right; font-size: 11pt;">Tarih : ${today}</td>
             </tr>
         </table>
         
-        <p style="margin-bottom: 15px;">${t('dearCustomer').replace('{customerName}', `<strong>${customer.name}</strong>`)}</p>
-        <p style="line-height: 1.5;">${t('reconciliationBodyText')}</p>
-        <p style="margin-bottom: 30px;">${t('sincerely')}</p>
+        <p style="margin-top: 30px; margin-bottom: 10px;">Sayın ,</p>
+        <p style="line-height: 1.5; margin: 0;">Dönemi Formlarına ilişkin fatura sayısı ve KDV hariç tutarlarına ait bilgiler aşağıda yer almaktadır.Mutabık olup olmadığınızı bildirmenizi rica ederiz.</p>
+        <p style="margin-top: 10px; margin-bottom: 30px;">Saygılarımızla</p>
 
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 10pt;">
             <tr>
                 <td style="width: 50%; vertical-align: top; padding-right: 20px;">
-                    <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px;">${t('senderInfo')}</h3>
-                    <table style="width: 100%; font-size: 10pt;">
-                        ${InfoRow(t('taxOffice'), COMPANY_INFO.taxOffice)}
-                        ${InfoRow(t('taxNumber'), COMPANY_INFO.taxNumber)}
-                        ${InfoRow(t('phone'), COMPANY_INFO.phone)}
-                        ${InfoRow(t('fax'), COMPANY_INFO.fax)}
-                        ${InfoRow(t('yetkili'), COMPANY_INFO.authorizedPerson)}
-                        ${InfoRow(t('email'), COMPANY_INFO.email)}
+                    <h3 style="font-size: 12pt; font-weight:bold; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px;">Gönderen</h3>
+                    <table style="width: 100%;">
+                        ${InfoRow('Vergi Dairesi', COMPANY_INFO.taxOffice)}
+                        ${InfoRow('Vergi Numarası', COMPANY_INFO.taxNumber)}
+                        ${InfoRow('Telefon', COMPANY_INFO.phone)}
+                        ${InfoRow('Faks', COMPANY_INFO.fax)}
+                        ${InfoRow('Yetkili', COMPANY_INFO.authorizedPerson)}
+                        ${InfoRow('E-Posta', COMPANY_INFO.email)}
                     </table>
                 </td>
                 <td style="width: 50%; vertical-align: top; padding-left: 20px;">
-                    <h3 style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px;">${t('customerInfo')}</h3>
-                     <table style="width: 100%; font-size: 10pt;">
-                        ${InfoRow(t('taxOffice'), customer.taxOffice || '')}
-                        ${InfoRow(t('taxNumber'), customer.taxNumber || '')}
-                        ${InfoRow(t('phone'), customer.phone1 || '')}
-                        ${InfoRow(t('fax'), customer.fax || '')}
-                        ${InfoRow(t('yetkili'), '')}
-                        ${InfoRow(t('email'), customer.email || '')}
+                    <h3 style="font-size: 12pt; font-weight:bold; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px;">Cari Hesap Bilgileriniz</h3>
+                     <table style="width: 100%;">
+                        ${InfoRow('Vergi Dairesi', customer.taxOffice || '')}
+                        ${InfoRow('Vergi Numarası', customer.taxNumber || '')}
+                        ${InfoRow('Telefon', customer.phone1 || '')}
+                        ${InfoRow('Faks', customer.fax || '')}
+                        ${InfoRow('Yetkili', '')}
+                        ${InfoRow('E-Posta', customer.email || '')}
                     </table>
                 </td>
             </tr>
         </table>
 
-        <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #000;">
+        <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #000; font-size: 10pt;">
             <thead style="background-color: #f2f2f2;">
                 <tr>
-                    <th style="border: 1px solid #000; padding: 8px;">${t('reconciliationTableTitle')}</th>
-                    <th style="border: 1px solid #000; padding: 8px;">${t('period')}</th>
-                    <th style="border: 1px solid #000; padding: 8px;">${t('documentCount')}</th>
-                    <th style="border: 1px solid #000; padding: 8px;">${t('totalAmount')}</th>
+                    <th style="border: 1px solid #000; padding: 8px; font-weight: bold;">Mutabakat</th>
+                    <th style="border: 1px solid #000; padding: 8px; font-weight: bold;">Dönem</th>
+                    <th style="border: 1px solid #000; padding: 8px; font-weight: bold;">Belge Sayısı</th>
+                    <th style="border: 1px solid #000; padding: 8px; font-weight: bold;">Toplam Tutar</th>
                 </tr>
             </thead>
             <tbody>
@@ -211,40 +214,20 @@ export const getReconciliationHtml = (reconciliation: Reconciliation, customer: 
             </tbody>
         </table>
 
-        ${invoices.length > 0 ? `
-        <h3 style="margin-top: 25px; font-size: 12pt;">${t('accountTransactions')}</h3>
-        <table style="width: 100%; border-collapse: collapse; font-size: 10pt; margin-top: 10px;">
-            <thead style="background-color: #f2f2f2;">
-                <tr>
-                    <th style="border: 1px solid #ccc; padding: 6px;">${t('invoiceNo')}</th>
-                    <th style="border: 1px solid #ccc; padding: 6px;">${t('date')}</th>
-                    <th style="border: 1px solid #ccc; padding: 6px; text-align: right;">${t('totalAmount')}</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${invoices.map(inv => `
-                    <tr>
-                        <td style="border: 1px solid #ccc; padding: 6px;">${inv.id}</td>
-                        <td style="border: 1px solid #ccc; padding: 6px;">${new Date(inv.date).toLocaleDateString('tr-TR')}</td>
-                        <td style="border: 1px solid #ccc; padding: 6px; text-align: right;">${inv.totalAmount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-        ` : ''}
+        <h3 style="margin-top: 25px; font-size: 12pt; font-weight: bold;">Notlar</h3>
+        <div style="border: 1px solid #ccc; min-height: 60px; padding: 5px; font-size: 10pt;">${reconciliation.notes || ''}</div>
+        
+        <div style="flex-grow: 1;"></div> <!-- Pushes content to bottom -->
 
-        <h3 style="margin-top: 25px; font-size: 12pt;">${t('notes')}</h3>
-        <div style="border: 1px solid #ccc; min-height: 60px; padding: 5px;">${reconciliation.notes || ''}</div>
-
-        <table style="width: 100%; margin-top: 80px; text-align: center;">
+        <table style="width: 100%; margin-top: 80px; text-align: center; font-size: 10pt;">
             <tr>
-                <td style="width: 50%;">${t('stampSignature')}</td>
-                <td style="width: 50%;">${t('stampSignature')}</td>
+                <td style="width: 50%;">Kaşe / İmza</td>
+                <td style="width: 50%;">Kaşe / İmza</td>
             </tr>
         </table>
         
-        <div style="position: absolute; bottom: 15mm; left: 0; right: 0; text-align: center; font-size: 9pt; color: #888;">
-            ${t('footerGeneratedBy')}
+        <div style="text-align: center; font-size: 9pt; color: #888; margin-top: 30px;">
+            Bu mutabakat mektubu e-crm üzerinden oluşturulmuştur.
         </div>
     </div>
     `;

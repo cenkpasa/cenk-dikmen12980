@@ -1,6 +1,6 @@
 import Dexie, { type Table } from 'dexie';
-import { User, Customer, Appointment, Interview, Offer, ErpSettings, StockItem, Invoice, Notification, LeaveRequest, KmRecord, LocationRecord, AISettings, EmailDraft, Reconciliation, CalculatorState, CalculationHistoryItem } from '../types';
-import { DEFAULT_ADMIN, MOCK_APPOINTMENTS, MOCK_CUSTOMERS } from '../constants';
+import { User, Customer, Appointment, Interview, Offer, ErpSettings, StockItem, Invoice, Notification, LeaveRequest, KmRecord, LocationRecord, AISettings, EmailDraft, Reconciliation, CalculatorState, CalculationHistoryItem, IncomingInvoice, OutgoingInvoice, AuditLog } from '../types';
+import { DEFAULT_ADMIN, MOCK_APPOINTMENTS, MOCK_CUSTOMERS, MOCK_INCOMING_INVOICES, MOCK_OUTGOING_INVOICES } from '../constants';
 
 export class AppDatabase extends Dexie {
     users!: Table<User, string>;
@@ -20,10 +20,13 @@ export class AppDatabase extends Dexie {
     reconciliations!: Table<Reconciliation, string>;
     calculatorState!: Table<CalculatorState, 'default'>;
     calculationHistory!: Table<CalculationHistoryItem, number>;
+    incomingInvoices!: Table<IncomingInvoice, string>;
+    outgoingInvoices!: Table<OutgoingInvoice, string>;
+    auditLogs!: Table<AuditLog, number>;
 
     constructor() {
         super('CnkCrmDatabase');
-        (this as Dexie).version(22).stores({
+        (this as Dexie).version(24).stores({
             users: 'id, &username',
             customers: 'id, &currentCode, name, createdAt, status',
             appointments: 'id, customerId, start, userId',
@@ -41,17 +44,39 @@ export class AppDatabase extends Dexie {
             reconciliations: 'id, customerId, status, period, createdAt',
             calculatorState: 'id',
             calculationHistory: '++id, timestamp',
+            incomingInvoices: 'id, vergiNo, tarih',
+            outgoingInvoices: 'id, vergiNo, tarih',
+            auditLogs: '++id, userId, entityId, timestamp',
         });
     }
 }
 
 export const db = new AppDatabase();
 
+export const seedInitialData = async () => {
+    try {
+        await db.transaction('rw', db.tables, async () => {
+            if ((await db.incomingInvoices.count()) === 0) {
+                console.log("Seeding incoming invoices...");
+                await db.incomingInvoices.bulkAdd(MOCK_INCOMING_INVOICES);
+            }
+            if ((await db.outgoingInvoices.count()) === 0) {
+                console.log("Seeding outgoing invoices...");
+                await db.outgoingInvoices.bulkAdd(MOCK_OUTGOING_INVOICES);
+            }
+        });
+        console.log("Sample invoice data seeded successfully.");
+    } catch (error) {
+        console.error("Failed to seed sample invoices:", error);
+    }
+};
+
 export const seedDatabase = async () => {
     try {
         const userCount = await db.users.count();
         if (userCount > 0) {
-            console.log("Database already contains data. Skipping seed.");
+            console.log("Database already contains user data. Skipping main seed.");
+            await seedInitialData(); // Still seed invoices if they are missing
             return;
         }
 
@@ -63,19 +88,30 @@ export const seedDatabase = async () => {
             password: DEFAULT_ADMIN.password || '1234',
         };
         
-        const crmUser: User = {
-            id: 'user-cnk',
-            username: 'cnk',
+        const muhasebeUser: User = {
+            id: 'user-muhasebe',
+            username: 'muhasebe',
             password: '1234',
-            role: 'admin',
-            name: 'CNK Satış Temsilcisi',
-            jobTitle: 'Satış Temsilcisi',
+            role: 'muhasebe',
+            name: 'Muhasebe Departmanı',
+            jobTitle: 'Muhasebe Uzmanı',
             avatar: 'https://randomuser.me/api/portraits/women/76.jpg',
             salesTarget: 75000,
         };
+        
+        const sahaUser: User = {
+            id: 'user-saha',
+            username: 'saha',
+            password: '1234',
+            role: 'saha',
+            name: 'Saha Personeli',
+            jobTitle: 'Satış Temsilcisi',
+            avatar: 'https://randomuser.me/api/portraits/men/75.jpg',
+            salesTarget: 50000,
+        };
 
         await (db as Dexie).transaction('rw', (db as Dexie).tables, async () => {
-            await db.users.bulkPut([adminUser, crmUser]);
+            await db.users.bulkPut([adminUser, muhasebeUser, sahaUser]);
 
             if (MOCK_CUSTOMERS.length > 0) {
                 const customersToSeed: Customer[] = MOCK_CUSTOMERS.map((c, i) => ({
@@ -89,13 +125,15 @@ export const seedDatabase = async () => {
               const appointmentsToSeed: Appointment[] = MOCK_APPOINTMENTS.map((a, i) => ({
                   ...a,
                   id: `mock-apt-${i + 1}`,
-                  userId: 'user-cnk',
+                  userId: 'user-saha',
                   createdAt: new Date().toISOString()
               }));
               await db.appointments.bulkAdd(appointmentsToSeed);
             }
             await db.erpSettings.put({ id: 'default', server: '192.168.1.100', databasePath: 'C:\\WOLVOX8\\WOLVOX.FDB', username: 'SYSDBA', isConnected: false });
         });
+        
+        await seedInitialData();
 
         console.log("Database seeded successfully.");
 

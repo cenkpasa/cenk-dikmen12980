@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ErpSettings, StockItem, Invoice, Customer, Offer } from '../types';
+import { ErpSettings, StockItem, Invoice, Customer, Offer, IncomingInvoice, OutgoingInvoice } from '../types';
 import { db } from '../services/dbService';
 import * as erpApiService from '../services/erpApiService';
 import type { Table } from 'dexie';
@@ -18,10 +18,12 @@ interface ErpContextType {
     updateErpSettings: (settings: ErpSettings) => Promise<void>;
     stockItems: StockItem[];
     invoices: Invoice[];
-    syncStock: () => Promise<SyncResult>; // This will now be a no-op as we focus on CSV
+    syncStock: () => Promise<SyncResult>;
     syncInvoices: () => Promise<SyncResult>;
     syncCustomers: () => Promise<SyncResult>;
     syncOffers: () => Promise<SyncResult>;
+    syncIncomingInvoices: () => Promise<SyncResult>;
+    syncOutgoingInvoices: () => Promise<SyncResult>;
 }
 
 const ErpContext = createContext<ErpContextType | undefined>(undefined);
@@ -38,6 +40,23 @@ export const ErpProvider = ({ children }: ErpProviderProps) => {
     const updateErpSettings = async (settings: ErpSettings) => {
         await db.erpSettings.put(settings);
     };
+    
+    const syncIncomingInvoices = async (): Promise<SyncResult> => {
+        const fetchedInvoices = await erpApiService.fetchIncomingInvoices();
+        await db.incomingInvoices.clear();
+        await db.incomingInvoices.bulkAdd(fetchedInvoices);
+        await updateErpSettings({ ...erpSettings!, lastSyncIncomingInvoices: new Date().toISOString() });
+        return { type: 'Gelen Fatura', fetched: fetchedInvoices.length, added: fetchedInvoices.length, updated: 0 };
+    };
+    
+    const syncOutgoingInvoices = async (): Promise<SyncResult> => {
+        const fetchedInvoices = await erpApiService.fetchOutgoingInvoices();
+        await db.outgoingInvoices.clear();
+        await db.outgoingInvoices.bulkAdd(fetchedInvoices);
+        await updateErpSettings({ ...erpSettings!, lastSyncOutgoingInvoices: new Date().toISOString() });
+        return { type: 'Giden Fatura', fetched: fetchedInvoices.length, added: fetchedInvoices.length, updated: 0 };
+    };
+
 
     const _syncCustomersFromCSV = async (): Promise<{ newCount: number, updatedCount: number, totalCount: number, customerMap: Map<string, string> }> => {
         const { customers: parsedCustomersMap } = await erpApiService.fetchErpCsvData();
@@ -177,6 +196,8 @@ export const ErpProvider = ({ children }: ErpProviderProps) => {
         syncInvoices,
         syncCustomers,
         syncOffers,
+        syncIncomingInvoices,
+        syncOutgoingInvoices,
     };
 
     return <ErpContext.Provider value={value}>{children}</ErpContext.Provider>;

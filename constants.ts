@@ -1,4 +1,4 @@
-import { User, Appointment, Invoice, StockItem, Customer, Offer, OfferItem } from './types';
+import { User, Appointment, Invoice, StockItem, Customer, Offer, OfferItem, IncomingInvoice, OutgoingInvoice } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
 // CONFIG
@@ -7,7 +7,7 @@ export const WORKPLACE_COORDS = { latitude: 39.98, longitude: 32.75 }; // Exampl
 
 // ASSETS
 export const ASSETS = {
-    CNK_LOGO_BASE64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAaUAAABDCAMAAAB838D2AAAAQlBMVEVHcEz/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AADJSSjlAAAAFXRSTlMAESJdmZqq7vCIiJmZImYiIiIiZogS8b2dAAADFklEQVR42u3b63KqQBCF4WxiL4sgoLz/Cz0gAylpSHHbaF6zftBNW5M0Tdf19gAAgABBBKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKKErD//+s8fR67K+l+28ufX0pP+vnn/y/a2182ffLw6eP9N39z3vTz13v8+79/fN2/r49f9o/f7/a9edv/f79//+/3+f//x/t+23f+/v//7//69f/n/f7v/Z/m//+r//fn/n/5//v/oP9/sP+43/v/61//vt//v//z/QMAAADgP6Fk/3//x88/f/959f/ef/9/8vT3/cf/n5/8fr/f+30+/+fv71//Xv//58f//r7/uJ//w1//33/u31+pFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSk...',
+    CNK_LOGO_BASE64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAaUAAABDCAMAAAB838D2AAAAQlBMVEVHcEz/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AADJSSjlAAAAFXRSTlMAESJdmZqq7vCIiJmZImYiIiIiZogS8b2dAAADFklEQVR42u3b63KqQBCF4WxiL4sgoLz/Cz0gAylpSHHbaF6zftBNW5M0Tdf19gAAgABBBKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKKErD//+s8fR67K+l+28ufX0pP+vnn/y/a2182ffLw6eP9N39z3vTz13v8+79/fN2/r49f9o/f7/a9edv/f79//+/3+f//x/t+23f+/v//7//69f/n/f7v/Z/m//+r//fn/n/5//v/oP9/sP+43/v/61//vt//v//z/QMAAADgP6Fk/3//x88/f/959f/ef/9/8vT3/cf/n5/8fr/f+30+/+fv71//Xv//58f//r7/uJ//w1//33/u31+pFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSkCiFKQMEUpAohSkDBFKQKIUpAwRSk...',
     LOGIN_BG_CNK_OFFICE: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2832&auto=format&fit=crop'
 };
 
@@ -44,6 +44,7 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'reports': 'Raporlar',
         'emailDrafts': 'E-posta Taslakları',
         'mutabakat': 'Mutabakat',
+        'auditLog': 'Denetim Kayıtları',
         'save': 'Kaydet',
         'cancel': 'İptal',
         'edit': 'Düzenle',
@@ -64,6 +65,7 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'fax': 'Faks',
         'copy': 'Kopyala',
         'copiedToClipboard': 'Panoya kopyalandı!',
+        'invoices': 'Faturalar',
 
         // --- Auth & Login ---
         'loggedInWelcome': 'Hoş geldiniz, {username}!',
@@ -116,6 +118,10 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'aiAnalysisCenter': 'AI Analiz Merkezi',
         'aiNoInsights': 'Harika iş! Yapay zekanın tespit ettiği acil bir görev veya risk bulunmuyor.',
         'viewDetails': 'Detayları Görüntüle',
+        'totalIncoming': 'Toplam Gelen Fatura',
+        'totalOutgoing': 'Toplam Giden Fatura',
+        'reconciliationDifference': 'Mutabakat Farkı',
+        'recentReconciliations': 'Son Mutabakatlar',
 
         // --- Customers ---
         'addNewCustomer': 'Yeni Müşteri Ekle',
@@ -271,6 +277,8 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'website': 'Web Sitesi',
         'user': 'Kullanıcı',
         'admin': 'Yönetici',
+        'muhasebe': 'Muhasebe',
+        'saha': 'Saha',
         'accountAndPermissions': 'Hesap & Yetki',
         'approved': 'Onaylandı',
         'rejected': 'Reddedildi',
@@ -338,7 +346,6 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'noEmailDrafts': 'Henüz AI tarafından oluşturulmuş bir e-posta taslağı yok.',
         'sendWithEmailClient': 'E-posta Programı ile Gönder',
         'emailClientOpened': 'E-posta programınız açılıyor...',
-        'draft': 'Taslak',
         'sent': 'Gönderildi',
         
         // --- AI Agent Insights ---
@@ -381,6 +388,26 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'sendEmail': 'E-posta Gönder',
         'disagreementDetails': 'Uyuşmazlık Detayları',
         'customerResponse': 'Müşteri Cevabı',
+        'incomingInvoices': 'Gelen Faturalar (Alış)',
+        'outgoingInvoices': 'Giden Faturalar (Satış)',
+        'matchedInvoices': 'Eşleşen Faturalar',
+        'unmatchedIncoming': 'Eşleşmeyen Gelen',
+        'unmatchedOutgoing': 'Eşleşmeyen Giden',
+        'autoMatch': 'Otomatik Eşleştir',
+        'createReconciliationsForMatches': '{count} Eşleşme için Mutabakat Oluştur',
+        'loadSampleInvoices': 'Örnek Faturaları Yükle',
+        'reconciliationSuccess': '{count} adet mutabakat başarıyla oluşturuldu.',
+        'noMatchesFound': 'Otomatik eşleşme bulunamadı.',
+        'invoiceListTotal': 'Toplam',
+        'invoiceDate': 'Fatura Tarihi',
+        'supplier': 'Tedarikçi',
+        'taxID': 'Vergi No',
+        'invoiceNo': 'Fatura No',
+        'draft': 'Taslak',
+        'in_review': 'İncelemede',
+        'rejectionReason': 'Reddetme Nedeni',
+        'approve': 'Onayla',
+        'reject': 'Reddet',
         
         // --- AI Hub ---
         'aiHubSalesExpertTitle': 'Satış Uzmanı',
@@ -462,12 +489,15 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'noOfferData': 'Teklif verisi bulunamadı veya eşitlenmedi.',
         'noInvoiceData': 'Fatura verisi bulunamadı veya eşitlenmedi.',
         'date': 'Tarih',
-        'invoiceNo': 'Fatura No',
         'syncSummaryTitle': '{type} Senkronizasyon Özeti',
         'syncSuccessTitle': 'Senkronizasyon Başarılı!',
         'syncSummaryBody': 'ERP sisteminden <strong class="text-cnk-accent-primary">{fetched}</strong> kayıt okundu. CRM\'e <strong class="text-green-600">{added}</strong> yeni kayıt eklendi ve <strong class="text-blue-600">{updated}</strong> kayıt güncellendi.',
         'newRecordsAdded': 'Yeni Kayıt Eklendi',
         'recordsUpdated': 'Kayıt Güncellendi',
+        'syncIncomingInvoices': 'Gelen Faturaları Çek',
+        'syncOutgoingInvoices': 'Giden Faturaları Çek',
+        'erpIncomingInvoiceSyncDesc': 'ERP\'den gelen (alış) faturalarını çekin.',
+        'erpOutgoingInvoiceSyncDesc': 'ERP\'den giden (satış) faturalarını çekin.',
 
         // --- Reports ---
         'customer_invoice_analysis': 'Customer Invoice Analysis',
@@ -479,7 +509,7 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'avgInvoiceAmount': 'Avg. Invoice Amount',
         'topCategory': 'Top Category',
         'totalCustomersInReport': 'Total Customers in Report',
-        'avgSpendPerCustomer': 'Avg. Spend per Customer',
+        'avgSpendPerCustomer': 'Avg. Spend Per Customer',
         'monthlySpendingTrend': 'Monthly Spending Trend',
         'categoryDistribution': 'Category Distribution',
         'analysisType': 'Analysis Type',
@@ -519,6 +549,7 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'reports': 'Reports',
         'emailDrafts': 'Email Drafts',
         'mutabakat': 'Reconciliation',
+        'auditLog': 'Audit Log',
         'save': 'Save',
         'cancel': 'Cancel',
         'edit': 'Edit',
@@ -535,6 +566,7 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'backToList': 'Back to List',
         'unknownCustomer': 'Unknown Customer',
         'defaultValue': 'Default',
+        'invoices': 'Invoices',
 
         // --- Auth & Login ---
         'loggedInWelcome': 'Welcome, {username}!',
@@ -587,6 +619,10 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'aiAnalysisCenter': 'AI Analysis Center',
         'aiNoInsights': 'Great job! The AI has not detected any urgent tasks or risks.',
         'viewDetails': 'View Details',
+        'totalIncoming': 'Total Incoming',
+        'totalOutgoing': 'Total Outgoing',
+        'reconciliationDifference': 'Difference',
+        'recentReconciliations': 'Recent Reconciliations',
 
         // --- Customers ---
         'addNewCustomer': 'Add New Customer',
@@ -644,6 +680,14 @@ export const MESSAGES: Record<string, Record<string, string>> = {
         'rejected': 'Rejected',
         'pending': 'Pending',
         'leaveRequestSent': 'Your leave request has been successfully submitted for approval.',
+        'draft': 'Draft',
+        'in_review': 'In Review',
+        'sent': 'Sent',
+        'admin': 'Admin',
+        'muhasebe': 'Accounting',
+        'saha': 'Field Staff',
+        'approve': 'Approve',
+        'reject': 'Reject',
     }
 };
 
@@ -654,6 +698,14 @@ export const DEFAULT_ADMIN: Omit<User, 'id'> = {
     name: 'Admin User',
     password: 'admin'
 };
+
+export const MOCK_SAHA_USER: Omit<User, 'id'> = {
+    username: 'saha',
+    role: 'saha',
+    name: 'Saha Personeli',
+    password: 'saha'
+};
+
 
 export const MOCK_CUSTOMERS: Omit<Customer, 'id' | 'createdAt'>[] = [
     { name: "ABC İnşaat A.Ş.", commercialTitle: "ABC İnşaat Sanayi ve Ticaret A.Ş.", email: "info@abcinsaat.com.tr", phone1: "0312 555 10 20", address: "Ankara Sanayi Bölgesi No: 1", notes: "Büyük bir proje için teklif bekliyorlar. Fiyat hassasiyetleri yüksek." },
@@ -730,4 +782,22 @@ export const MOCK_ERP_OFFERS: (Omit<Offer, 'id' | 'createdAt' | 'toplam' | 'kdv'
         ],
         notlar: 'İkinci ERP üzerinden otomatik oluşturulmuş test teklifi.',
     }
+];
+
+export const MOCK_INCOMING_INVOICES: IncomingInvoice[] = [
+  { id: uuidv4(), faturaNo: 'EUR2025000009155', tedarikciAdi: 'EUROFER KESİCİ TAKIMLAR', vergiNo: '4641531636', tarih: '2025-08-04T10:46:00.000Z', tutar: 3288.00, description: 'CG35692,IAT206B-080' },
+  { id: uuidv4(), faturaNo: 'CTR2025000002662', tedarikciAdi: 'CUTRON KESİCİ TAKIMLAR', vergiNo: '2161201788', tarih: '2025-08-01T07:56:00.000Z', tutar: 13566.24, description: 'KARBÜR FREZE' },
+  { id: uuidv4(), faturaNo: 'AKH2025000000728', tedarikciAdi: 'AK KESİCİ TAKIM', vergiNo: '0111103590', tarih: '2025-07-24T11:18:00.000Z', tutar: 2169.60, description: 'KARBÜR MATKAP' },
+  { id: uuidv4(), faturaNo: 'ASL2025000002659', tedarikciAdi: 'ASLAN GRUP KESİCİ TAKIM', vergiNo: '0891305401', tarih: '2025-07-23T18:15:00.000Z', tutar: 7333.62, description: 'Özel Takım' },
+];
+
+export const MOCK_OUTGOING_INVOICES: OutgoingInvoice[] = [
+  // A perfect match for EUROFER
+  { id: uuidv4(), faturaNo: 'CNK-SATIS-001', musteriAdi: 'EUROFER KESİCİ TAKIMLAR', vergiNo: '4641531636', tarih: '2025-08-05T09:00:00.000Z', tutar: 3288.00, description: 'CG35692' },
+  // A match with date tolerance for CUTRON
+  { id: uuidv4(), faturaNo: 'CNK-SATIS-002', musteriAdi: 'CUTRON KESİCİ TAKIMLAR', vergiNo: '2161201788', tarih: '2025-08-03T14:30:00.000Z', tutar: 13566.24, description: 'KARBÜR FREZE' },
+   // A match with amount tolerance for ASLAN GRUP
+  { id: uuidv4(), faturaNo: 'CNK-SATIS-003', musteriAdi: 'ASLAN GRUP KESİCİ TAKIM', vergiNo: '0891305401', tarih: '2025-07-23T18:15:00.000Z', tutar: 7333.61, description: 'Özel Takımlar' },
+  // Unmatched outgoing invoice
+  { id: uuidv4(), faturaNo: 'CNK-SATIS-004', musteriAdi: 'YENİ MÜŞTERİ A.Ş.', vergiNo: '9999999999', tarih: '2025-08-10T11:00:00.000Z', tutar: 5000.00, description: 'Hırdavat' },
 ];

@@ -4,11 +4,14 @@ import { Reconciliation } from '../types';
 import { db } from '../services/dbService';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from './AuthContext';
+import { auditLogService } from '../services/auditLogService';
 
 interface ReconciliationContextType {
     reconciliations: Reconciliation[];
     addReconciliation: (data: Omit<Reconciliation, 'id' | 'createdAt' | 'createdBy' | 'status'>) => Promise<string>;
     updateReconciliation: (id: string, updates: Partial<Reconciliation>) => Promise<void>;
+    approveReconciliation: (id: string) => Promise<void>;
+    rejectReconciliation: (id: string, reason: string) => Promise<void>;
 }
 
 const ReconciliationContext = createContext<ReconciliationContextType | undefined>(undefined);
@@ -25,17 +28,32 @@ export const ReconciliationProvider = ({ children }: { children: ReactNode }) =>
             id: uuidv4(),
             createdAt: new Date().toISOString(),
             createdBy: currentUser.id,
-            status: 'pending',
+            status: 'draft',
         };
         await db.reconciliations.add(newReconciliation);
+        await auditLogService.logAction(currentUser, 'CREATE_RECONCILIATION', 'reconciliation', newReconciliation.id, `Reconciliation for period ${newReconciliation.period} created.`);
         return newReconciliation.id;
     };
     
     const updateReconciliation = async (id: string, updates: Partial<Reconciliation>) => {
+        if (!currentUser) throw new Error("User not authenticated");
         await db.reconciliations.update(id, updates);
+        await auditLogService.logAction(currentUser, 'UPDATE_RECONCILIATION', 'reconciliation', id, `Updated fields: ${Object.keys(updates).join(', ')}`);
     };
 
-    const value = { reconciliations, addReconciliation, updateReconciliation };
+    const approveReconciliation = async (id: string) => {
+        if (!currentUser) throw new Error("User not authenticated");
+        await db.reconciliations.update(id, { status: 'approved' });
+        await auditLogService.logAction(currentUser, 'APPROVE_RECONCILIATION', 'reconciliation', id, 'Status changed to Approved.');
+    };
+
+    const rejectReconciliation = async (id: string, reason: string) => {
+        if (!currentUser) throw new Error("User not authenticated");
+        await db.reconciliations.update(id, { status: 'rejected', notes: reason });
+         await auditLogService.logAction(currentUser, 'REJECT_RECONCILIATION', 'reconciliation', id, `Status changed to Rejected. Reason: ${reason}`);
+    };
+
+    const value = { reconciliations, addReconciliation, updateReconciliation, approveReconciliation, rejectReconciliation };
 
     return (
         <ReconciliationContext.Provider value={value}>

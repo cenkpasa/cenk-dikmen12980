@@ -9,6 +9,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { ViewState } from '../../App';
 import { useErp } from '../../contexts/ErpContext';
 import AIInsightCenter from './AIInsightCenter';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../../services/dbService';
 
 const AdminDashboard = ({ setView }: { setView: (view: ViewState) => void; }) => {
     const { customers, appointments } = useData();
@@ -16,18 +18,12 @@ const AdminDashboard = ({ setView }: { setView: (view: ViewState) => void; }) =>
     const { invoices } = useErp();
     const { t } = useLanguage();
     
-    const totalMonthlySales = useMemo(() => {
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+    const incomingInvoices = useLiveQuery(() => db.incomingInvoices.toArray(), []) || [];
+    const outgoingInvoices = useLiveQuery(() => db.outgoingInvoices.toArray(), []) || [];
 
-        return invoices
-            .filter(inv => {
-                const invDate = new Date(inv.date);
-                return invDate.getMonth() === currentMonth && invDate.getFullYear() === currentYear;
-            })
-            .reduce((sum, inv) => sum + inv.totalAmount, 0);
-    }, [invoices]);
+    const totalIncoming = useMemo(() => incomingInvoices.reduce((sum, inv) => sum + inv.tutar, 0), [incomingInvoices]);
+    const totalOutgoing = useMemo(() => outgoingInvoices.reduce((sum, inv) => sum + inv.tutar, 0), [outgoingInvoices]);
+    const difference = totalOutgoing - totalIncoming;
 
     const pendingAppointments = appointments.filter(a => new Date(a.start) >= new Date()).length;
 
@@ -35,10 +31,10 @@ const AdminDashboard = ({ setView }: { setView: (view: ViewState) => void; }) =>
         <div className="space-y-6">
             {/* Top Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard titleKey="dashboard_totalCustomers" value={String(customers.length)} change={t('customerCount', { count: String(customers.length) })} color="blue" />
+                <StatCard titleKey="totalIncoming" value={`${totalIncoming.toLocaleString('tr-TR')}₺`} change="" color="blue" />
+                <StatCard titleKey="totalOutgoing" value={`${totalOutgoing.toLocaleString('tr-TR')}₺`} change="" color="green" />
+                <StatCard titleKey="reconciliationDifference" value={`${difference.toLocaleString('tr-TR')}₺`} change="" color="yellow" />
                 <StatCard titleKey="dashboard_pendingAppointments" value={String(pendingAppointments)} change={t('appointmentCount', { count: String(pendingAppointments) })} color="pink" />
-                <StatCard titleKey="dashboard_totalUsers" value={String(users.length)} change={t('userCount', { count: String(users.length) })} color="yellow" />
-                <StatCard titleKey="dashboard_monthlySales" value={`${totalMonthlySales.toLocaleString('tr-TR')}₺`} change={t('totalTeamSales')} color="green" />
             </div>
 
             {/* Charts & AI */}

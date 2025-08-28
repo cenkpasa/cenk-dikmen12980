@@ -20,7 +20,8 @@ const UserForm = ({ isOpen, onClose, user }: UserFormProps) => {
     const [activeTab, setActiveTab] = useState('general');
 
     const getInitialState = (): Omit<User, 'id'> => ({
-        username: '', password: '', role: 'user', name: '',
+        // FIX: Changed default role from 'user' to 'saha' to match UserRole type.
+        username: '', password: '', role: 'saha', name: '',
         jobTitle: '', avatar: '', tcNo: '', phone: '', startDate: '',
         employmentStatus: 'Aktif', bloodType: '', licensePlate: '', gender: 'male',
         salary: 0, educationLevel: '', address: '', annualLeaveDays: 14,
@@ -159,8 +160,10 @@ const UserForm = ({ isOpen, onClose, user }: UserFormProps) => {
                         <Input id="password" type="password" label={`${t('password')} (${user ? t('leaveBlankToKeep') : t('required')})`} value={formData.password || ''} onChange={handleChange} required={!user} />
                         <div>
                             <label htmlFor="role" className="mb-2 block text-sm font-semibold">{t('role')}</label>
+                            {/* FIX: Replaced invalid 'user' role option with all valid UserRole options. */}
                             <select id="role" value={formData.role} onChange={handleChange} className="w-full rounded-lg border border-cnk-border-light bg-cnk-bg-light p-2">
-                                <option value="user">{t('user')}</option>
+                                <option value="saha">{t('saha')}</option>
+                                <option value="muhasebe">{t('muhasebe')}</option>
                                 <option value="admin">{t('admin')}</option>
                             </select>
                         </div>

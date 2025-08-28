@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Customer } from '../../types';
+import React, { useState, useMemo } from 'react';
+import { Customer, Invoice, Reconciliation } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useData } from '../../contexts/DataContext';
 import { analyzeOpportunities, suggestNextStep, analyzeSentiment } from '../../services/aiService';
@@ -9,6 +9,9 @@ import Button from '../common/Button';
 import ActivityTimeline from './ActivityTimeline';
 import { ViewState } from '../../App';
 import Loader from '../common/Loader';
+import { useErp } from '../../contexts/ErpContext';
+import { useReconciliation } from '../../contexts/ReconciliationContext';
+import DataTable from '../common/DataTable';
 
 
 interface CustomerDetailModalProps {
@@ -57,13 +60,23 @@ const AIAnalysisSection = ({ title, icon, analysisData, onRun, isLoading }: { ti
 const CustomerDetailModal = ({ isOpen, onClose, customer, onEdit, setView }: CustomerDetailModalProps) => {
     const { t } = useLanguage();
     const { updateCustomer } = useData();
+    const { invoices } = useErp();
+    const { reconciliations } = useReconciliation();
     const { showNotification } = useNotification();
-    const [activeTab, setActiveTab] = useState<'timeline' | 'ai'>('timeline');
+    const [activeTab, setActiveTab] = useState<'timeline' | 'ai' | 'invoices' | 'reconciliations'>('timeline');
     const [loadingAI, setLoadingAI] = useState<Record<string, boolean>>({
         opportunity: false,
         nextStep: false,
         sentiment: false,
     });
+
+    const customerInvoices = useMemo(() => 
+        invoices.filter(inv => inv.customerId === customer.id)
+    , [invoices, customer.id]);
+
+    const customerReconciliations = useMemo(() => 
+        reconciliations.filter(r => r.customerId === customer.id)
+    , [reconciliations, customer.id]);
 
     const handleCreateAppointment = () => {
         onClose();
@@ -99,9 +112,46 @@ const CustomerDetailModal = ({ isOpen, onClose, customer, onEdit, setView }: Cus
         }
     };
 
+    const invoiceColumns = [
+        { header: t('invoiceNo'), accessor: (item: Invoice) => item.id },
+        { header: t('date'), accessor: (item: Invoice) => new Date(item.date).toLocaleDateString() },
+        { header: t('totalAmount'), accessor: (item: Invoice) => item.totalAmount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }) },
+    ];
+    
+    const getStatusClass = (status: Reconciliation['status']) => {
+        switch (status) {
+            case 'approved': return 'bg-green-100 text-green-800';
+            case 'rejected': return 'bg-red-100 text-red-800';
+            case 'sent': return 'bg-blue-100 text-blue-800';
+            case 'in_review': return 'bg-purple-100 text-purple-800';
+            case 'draft':
+            default: return 'bg-yellow-100 text-yellow-800';
+        }
+    };
+
+    const reconciliationColumns = [
+        { header: t('period'), accessor: (item: Reconciliation) => item.period },
+        { header: t('amount'), accessor: (item: Reconciliation) => item.amount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })},
+        { 
+            header: t('status'), 
+            accessor: (item: Reconciliation) => (
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(item.status)}`}>
+                    {t(item.status)}
+                </span>
+            )
+        },
+        { header: t('createdAt'), accessor: (item: Reconciliation) => new Date(item.createdAt).toLocaleDateString() }
+    ];
+
+    const tabs = [
+        { id: 'timeline', label: t('activityTimeline'), icon: 'fas fa-history' },
+        { id: 'invoices', label: t('invoices'), icon: 'fas fa-file-invoice' },
+        { id: 'reconciliations', label: t('reconciliations'), icon: 'fas fa-handshake' },
+        { id: 'ai', label: t('aiAnalysis'), icon: 'fas fa-robot' },
+    ];
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={t('customerDetail')} size="4xl">
+        <Modal isOpen={isOpen} onClose={onClose} title={t('customerDetail')} size="5xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Left Panel: Info */}
                 <div className="md:col-span-1 space-y-4">
@@ -117,6 +167,7 @@ const CustomerDetailModal = ({ isOpen, onClose, customer, onEdit, setView }: Cus
                     <div className="space-y-3 text-sm">
                         <InfoItem label={t('email')} value={customer.email} />
                         <InfoItem label={t('phone')} value={customer.phone1} />
+                        <InfoItem label={t('taxNumber')} value={customer.taxNumber} />
                         <InfoItem label={t('address')} value={customer.address} />
                     </div>
                     <div className="border-t pt-4 flex flex-wrap gap-2">
@@ -128,43 +179,53 @@ const CustomerDetailModal = ({ isOpen, onClose, customer, onEdit, setView }: Cus
                 {/* Right Panel: Tabs */}
                 <div className="md:col-span-2">
                     <div className="flex border-b border-cnk-border-light mb-4">
-                        <button onClick={() => setActiveTab('timeline')} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium ${activeTab === 'timeline' ? 'border-b-2 border-cnk-accent-primary text-cnk-accent-primary' : 'text-cnk-txt-muted-light'}`}>
-                            <i className="fas fa-history"></i>
-                            <span>{t('activityTimeline')}</span>
-                        </button>
-                        <button onClick={() => setActiveTab('ai')} className={`flex items-center gap-2 px-4 py-2 text-sm font-medium ${activeTab === 'ai' ? 'border-b-2 border-cnk-accent-primary text-cnk-accent-primary' : 'text-cnk-txt-muted-light'}`}>
-                            <i className="fas fa-robot"></i>
-                            <span>{t('aiAnalysis')}</span>
-                        </button>
+                        {tabs.map(tab => (
+                             <button 
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as any)} 
+                                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium ${activeTab === tab.id ? 'border-b-2 border-cnk-accent-primary text-cnk-accent-primary' : 'text-cnk-txt-muted-light'}`}>
+                                <i className={tab.icon}></i>
+                                <span>{tab.label}</span>
+                            </button>
+                        ))}
                     </div>
+                    <div className="max-h-96 overflow-y-auto pr-2">
+                        {activeTab === 'timeline' && <ActivityTimeline customerId={customer.id} />}
+                        
+                        {activeTab === 'ai' && (
+                            <div className="space-y-4">
+                                <AIAnalysisSection 
+                                    title={t('opportunityAnalysis')}
+                                    icon="fa-lightbulb"
+                                    analysisData={customer.aiOpportunityAnalysis}
+                                    onRun={() => handleRunAnalysis('opportunity')}
+                                    isLoading={loadingAI.opportunity}
+                                />
+                                <AIAnalysisSection 
+                                    title={t('suggestNextStep')}
+                                    icon="fa-shoe-prints"
+                                    analysisData={customer.aiNextStepSuggestion}
+                                    onRun={() => handleRunAnalysis('nextStep')}
+                                    isLoading={loadingAI.nextStep}
+                                />
+                                <AIAnalysisSection 
+                                    title={t('sentimentAnalysis')}
+                                    icon="fa-smile-beam"
+                                    analysisData={customer.aiSentimentAnalysis}
+                                    onRun={() => handleRunAnalysis('sentiment')}
+                                    isLoading={loadingAI.sentiment}
+                                />
+                            </div>
+                        )}
 
-                    {activeTab === 'timeline' && <ActivityTimeline customerId={customer.id} />}
-                    
-                    {activeTab === 'ai' && (
-                        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                            <AIAnalysisSection 
-                                title={t('opportunityAnalysis')}
-                                icon="fa-lightbulb"
-                                analysisData={customer.aiOpportunityAnalysis}
-                                onRun={() => handleRunAnalysis('opportunity')}
-                                isLoading={loadingAI.opportunity}
-                            />
-                             <AIAnalysisSection 
-                                title={t('suggestNextStep')}
-                                icon="fa-shoe-prints"
-                                analysisData={customer.aiNextStepSuggestion}
-                                onRun={() => handleRunAnalysis('nextStep')}
-                                isLoading={loadingAI.nextStep}
-                            />
-                             <AIAnalysisSection 
-                                title={t('sentimentAnalysis')}
-                                icon="fa-smile-beam"
-                                analysisData={customer.aiSentimentAnalysis}
-                                onRun={() => handleRunAnalysis('sentiment')}
-                                isLoading={loadingAI.sentiment}
-                            />
-                        </div>
-                    )}
+                        {activeTab === 'invoices' && (
+                             <DataTable columns={invoiceColumns} data={customerInvoices} emptyStateMessage={t('noInvoiceData')} />
+                        )}
+
+                        {activeTab === 'reconciliations' && (
+                            <DataTable columns={reconciliationColumns} data={customerReconciliations} emptyStateMessage={t('noReconciliationYet')} />
+                        )}
+                    </div>
                 </div>
             </div>
         </Modal>

@@ -33,6 +33,8 @@ const Customers = ({ setView }: { setView: (view: ViewState) => void; }) => {
     const [excelData, setExcelData] = useState<{jsonData: any[], headers: string[]}>({jsonData: [], headers: []});
     const [mappedCustomers, setMappedCustomers] = useState<Omit<Customer, 'id' | 'createdAt'>[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    
+    const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'muhasebe';
 
     const handleAdd = () => {
         setSelectedCustomer(null);
@@ -40,7 +42,7 @@ const Customers = ({ setView }: { setView: (view: ViewState) => void; }) => {
     };
 
     const handleEdit = (customer: Customer) => {
-        if (currentUser?.role !== 'admin') {
+        if (!canEdit) {
             showNotification('permissionDenied', 'error');
             return;
         }
@@ -54,7 +56,7 @@ const Customers = ({ setView }: { setView: (view: ViewState) => void; }) => {
     };
     
     const openDeleteConfirm = (customerId: string) => {
-        if (currentUser?.role !== 'admin') {
+        if (!canEdit) {
             showNotification('permissionDenied', 'error');
             return;
         }
@@ -127,7 +129,7 @@ const Customers = ({ setView }: { setView: (view: ViewState) => void; }) => {
             accessor: (item: Customer) => (
                 <div className="flex gap-2">
                     <Button variant="secondary" size="sm" onClick={() => handleView(item)} icon="fas fa-eye" title={t('view')} />
-                    {currentUser?.role === 'admin' && (
+                    {canEdit && (
                         <>
                            <Button variant="info" size="sm" onClick={() => handleEdit(item)} icon="fas fa-edit" title={t('edit')} />
                            <Button variant="danger" size="sm" onClick={() => openDeleteConfirm(item.id)} icon="fas fa-trash" title={t('delete')} />
@@ -144,7 +146,7 @@ const Customers = ({ setView }: { setView: (view: ViewState) => void; }) => {
                 <h1 className="text-2xl font-bold">{t('customerList')}</h1>
                 <div className="flex gap-2">
                     <input type="file" ref={fileInputRef} onChange={handleExcelUpload} accept=".xlsx, .xls" className="hidden"/>
-                    <Button variant="secondary" onClick={() => fileInputRef.current?.click()} icon="fas fa-upload">{t('addFromExcel')}</Button>
+                    {canEdit && <Button variant="secondary" onClick={() => fileInputRef.current?.click()} icon="fas fa-upload">{t('addFromExcel')}</Button>}
                     <Button variant="primary" onClick={handleAdd} icon="fas fa-plus">{t('addNewCustomer')}</Button>
                 </div>
             </div>

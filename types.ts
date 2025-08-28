@@ -27,11 +27,13 @@ export interface LocationRecord {
     customerId?: string;
 }
 
+export type UserRole = 'admin' | 'muhasebe' | 'saha';
+
 export interface User {
     id:string;
     username:string;
     password?:string;
-    role:'admin' | 'user';
+    role: UserRole;
     name:string;
     jobTitle?:string;
     avatar?:string;
@@ -188,6 +190,26 @@ export interface Invoice {
     description?: string;
 }
 
+export interface IncomingInvoice {
+    id: string;
+    faturaNo: string;
+    tedarikciAdi: string;
+    vergiNo: string;
+    tarih: string; // ISO format string
+    tutar: number;
+    description?: string;
+}
+
+export interface OutgoingInvoice {
+    id: string;
+    faturaNo: string;
+    musteriAdi: string;
+    vergiNo: string;
+    tarih: string; // ISO format string
+    tutar: number;
+    description?: string;
+}
+
 export interface ErpSettings {
     id: 'default';
     server: string;
@@ -198,15 +220,17 @@ export interface ErpSettings {
     lastSyncInvoices?: string;
     lastSyncCustomers?: string;
     lastSyncOffers?: string;
+    lastSyncIncomingInvoices?: string;
+    lastSyncOutgoingInvoices?: string;
 }
 
-export type Page = 'dashboard' | 'customers' | 'email' | 'appointments' | 'gorusme-formu' | 'teklif-yaz' | 'personnel' | 'hesaplama-araclari' | 'profile' | 'yapay-zeka' | 'konum-takip' | 'erp-entegrasyonu' | 'ai-ayarlari' | 'raporlar' | 'email-taslaklari' | 'mutabakat';
+export type Page = 'dashboard' | 'customers' | 'email' | 'appointments' | 'gorusme-formu' | 'teklif-yaz' | 'personnel' | 'hesaplama-araclari' | 'profile' | 'yapay-zeka' | 'konum-takip' | 'erp-entegrasyonu' | 'ai-ayarlari' | 'raporlar' | 'email-taslaklari' | 'mutabakat' | 'audit-log';
 
 export interface Notification {
     id: string;
     messageKey: string;
     replacements?: Record<string, string>;
-    type: 'customer' | 'appointment' | 'offer' | 'interview' | 'system';
+    type: 'customer' | 'appointment' | 'offer' | 'interview' | 'system' | 'reconciliation';
     timestamp: string;
     isRead: boolean;
     link?: {
@@ -238,11 +262,11 @@ export interface AISettings {
 }
 
 export type ReconciliationType = 'current_account' | 'ba' | 'bs';
-export type ReconciliationStatus = 'pending' | 'agreed' | 'disagreed';
+export type ReconciliationStatus = 'draft' | 'in_review' | 'approved' | 'sent' | 'rejected';
 
 export interface Reconciliation {
     id: string;
-    customerId: string;
+    customerId: string; // Can be derived from invoices' tax number
     type: ReconciliationType;
     period: string; // e.g., "2024-07"
     amount: number;
@@ -253,6 +277,8 @@ export interface Reconciliation {
     customerResponse?: string;
     notes?: string;
     aiAnalysis?: string;
+    incomingInvoiceId: string;
+    outgoingInvoiceId: string;
 }
 
 export interface CalculatorState {
@@ -276,3 +302,14 @@ export type ReportType =
     'ai_analysis_summary' |
     'customer_segmentation' |
     'offer_success_analysis';
+    
+export interface AuditLog {
+    id?: number;
+    userId: string;
+    userName: string;
+    action: string;
+    entity: string;
+    entityId: string;
+    timestamp: string;
+    details?: string;
+}

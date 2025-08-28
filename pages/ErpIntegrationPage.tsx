@@ -72,14 +72,14 @@ const SyncSummaryModal = ({ isOpen, onClose, result }: { isOpen: boolean, onClos
 
 const ErpIntegrationPage = () => {
     const { t } = useLanguage();
-    const { erpSettings, updateErpSettings, syncStock, syncInvoices, stockItems, invoices, syncCustomers, syncOffers } = useErp();
+    const { erpSettings, updateErpSettings, syncStock, syncInvoices, stockItems, invoices, syncCustomers, syncOffers, syncIncomingInvoices, syncOutgoingInvoices } = useErp();
     const { customers, offers } = useData();
-    const { users, updateUser } = useAuth();
+    const { users, updateUser, currentUser } = useAuth();
     const { showNotification } = useNotification();
 
     const [settings, setSettings] = useState<ErpSettings | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [isSyncing, setIsSyncing] = useState<null | 'stock' | 'invoices' | 'customers' | 'offers'>(null);
+    const [isSyncing, setIsSyncing] = useState<string | null>(null);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [activeTab, setActiveTab] = useState('connection');
     const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
@@ -106,7 +106,7 @@ const ErpIntegrationPage = () => {
         setIsLoading(false);
     };
 
-    const handleSync = async (type: 'stock' | 'invoices' | 'customers' | 'offers') => {
+    const handleSync = async (type: 'stock' | 'invoices' | 'customers' | 'offers' | 'incoming' | 'outgoing') => {
         setIsSyncing(type);
         try {
             let result;
@@ -115,6 +115,8 @@ const ErpIntegrationPage = () => {
                 case 'invoices': result = await syncInvoices(); break;
                 case 'customers': result = await syncCustomers(); break;
                 case 'offers': result = await syncOffers(); break;
+                case 'incoming': result = await syncIncomingInvoices(); break;
+                case 'outgoing': result = await syncOutgoingInvoices(); break;
             }
             setSyncResult(result);
         } catch (error) {
@@ -188,6 +190,12 @@ const ErpIntegrationPage = () => {
         { header: t('date'), accessor: (item: Invoice) => new Date(item.date).toLocaleDateString() },
         { header: t('totalAmount'), accessor: (item: Invoice) => `${item.totalAmount.toLocaleString('tr-TR')} TL` },
     ];
+    
+    const canAccess = currentUser?.role === 'admin' || currentUser?.role === 'muhasebe';
+
+    if (!canAccess) {
+        return <p className="text-center p-4 bg-yellow-500/10 text-yellow-300 rounded-lg">{t('permissionDenied')}</p>;
+    }
 
     if (!settings) {
         return <Loader fullScreen />;
@@ -241,10 +249,10 @@ const ErpIntegrationPage = () => {
                     <div className="lg:col-span-2">
                         <h2 className="text-xl font-semibold text-cnk-accent-primary mb-4">{t('dataSync')}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <SyncCard titleKey="incomingInvoices" descriptionKey="erpIncomingInvoiceSyncDesc" lastSync={settings.lastSyncIncomingInvoices} type="incoming" onSync={handleSync} isSyncing={isSyncing} isConnected={settings.isConnected} />
+                           <SyncCard titleKey="outgoingInvoices" descriptionKey="erpOutgoingInvoiceSyncDesc" lastSync={settings.lastSyncOutgoingInvoices} type="outgoing" onSync={handleSync} isSyncing={isSyncing} isConnected={settings.isConnected} />
                            <SyncCard titleKey="customerListTitle" descriptionKey="erpCustomerSyncDesc" lastSync={settings.lastSyncCustomers} type="customers" onSync={handleSync} isSyncing={isSyncing} isConnected={settings.isConnected} />
                            <SyncCard titleKey="offerManagementTitle" descriptionKey="erpOfferSyncDesc" lastSync={settings.lastSyncOffers} type="offers" onSync={handleSync} isSyncing={isSyncing} isConnected={settings.isConnected} />
-                           <SyncCard titleKey="stockStatus" descriptionKey="erpStockSyncDesc" lastSync={settings.lastSyncStock} type="stock" onSync={handleSync} isSyncing={isSyncing} isConnected={settings.isConnected} />
-                           <SyncCard titleKey="salesInvoicesTitle" descriptionKey="erpInvoiceSyncDesc" lastSync={settings.lastSyncInvoices} type="invoices" onSync={handleSync} isSyncing={isSyncing} isConnected={settings.isConnected} />
                         </div>
                     </div>
                 </div>
@@ -283,9 +291,9 @@ const TabContent = ({ isVisible, title, children }: { isVisible: boolean, title:
     );
 };
 
-const SyncCard = ({ titleKey, descriptionKey, lastSync, type, onSync, isSyncing, isConnected } : { titleKey: string, descriptionKey: string, lastSync?: string, type: 'customers' | 'offers' | 'stock' | 'invoices', onSync: (type: any) => void, isSyncing: string | null, isConnected: boolean }) => {
+const SyncCard = ({ titleKey, descriptionKey, lastSync, type, onSync, isSyncing, isConnected } : { titleKey: string, descriptionKey: string, lastSync?: string, type: 'customers' | 'offers' | 'stock' | 'invoices' | 'incoming' | 'outgoing', onSync: (type: any) => void, isSyncing: string | null, isConnected: boolean }) => {
     const { t } = useLanguage();
-    const syncKeyMap = { customers: 'syncCustomers', offers: 'syncOffers', stock: 'syncStock', invoices: 'syncInvoices' };
+    const syncKeyMap = { customers: 'syncCustomers', offers: 'syncOffers', stock: 'syncStock', invoices: 'syncInvoices', incoming: 'syncIncomingInvoices', outgoing: 'syncOutgoingInvoices' };
     return (
         <div className="flex flex-col justify-between p-4 bg-cnk-bg-light rounded-lg border border-cnk-border-light">
             <div>

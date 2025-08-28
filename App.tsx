@@ -25,6 +25,7 @@ import AISettingsPage from './pages/AISettingsPage';
 import ReportPage from './pages/ReportPage';
 import EmailDraftsPage from './pages/EmailDraftsPage';
 import ReconciliationPage from './pages/ReconciliationPage';
+import AuditLogPage from './pages/AuditLogPage';
 
 export type ViewState = {
     page: PageType;
@@ -49,6 +50,7 @@ const PageContent = ({ view, setView }: { view: ViewState; setView: (view: ViewS
         case 'raporlar': return <ReportPage />;
         case 'email-taslaklari': return <EmailDraftsPage setView={setView} />;
         case 'mutabakat': return <ReconciliationPage />;
+        case 'audit-log': return <AuditLogPage />;
         default: return <Dashboard setView={setView} />;
     }
 };

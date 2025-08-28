@@ -21,6 +21,7 @@ const LatestActivity = ({ setView }: LatestActivityProps) => {
             offer: { icon: 'fa-file-invoice-dollar', color: 'text-purple-500' },
             interview: { icon: 'fa-file-signature', color: 'text-orange-500' },
             system: { icon: 'fa-cog', color: 'text-slate-500' },
+            reconciliation: { icon: 'fa-handshake', color: 'text-teal-500' },
         };
         return iconMap[type] || iconMap.system;
     };

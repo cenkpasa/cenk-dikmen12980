@@ -4,6 +4,7 @@ import { useNotification } from './NotificationContext';
 import { db } from '../services/dbService';
 import { api } from '../services/apiService';
 import { v4 as uuidv4 } from 'uuid';
+import { auditLogService } from '../services/auditLogService';
 
 interface AuthContextType {
     currentUser: User | null;
@@ -85,6 +86,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
         storageToUse.setItem('currentUser', JSON.stringify(userToStore));
         setCurrentUser(user);
+        await auditLogService.logAction(user, 'LOGIN_SUCCESS', 'user', user.id);
         return { success: true, messageKey: 'loggedInWelcome' };
     };
 
@@ -98,15 +100,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             id: uuidv4(), 
             username, 
             password: password, 
-            role: 'user', 
+            role: 'saha', 
             name: username 
         };
         await db.users.add(newUser);
         await refreshUsers();
+        await auditLogService.logAction(newUser, 'REGISTER', 'user', newUser.id);
         return { success: true, messageKey: 'registrationSuccess' };
     };
 
-    const logout = () => {
+    const logout = async () => {
+        if (currentUser) {
+            await auditLogService.logAction(currentUser, 'LOGOUT', 'user', currentUser.id);
+        }
         sessionStorage.removeItem('currentUser');
         localStorage.removeItem('currentUser');
         setCurrentUser(null);
@@ -114,6 +120,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     const updateUser = async (userToUpdate: User): Promise<{ success: boolean, messageKey: string }> => {
+        if (!currentUser) return { success: false, messageKey: 'permissionDenied' };
         try {
             const existingUser = await db.users.get(userToUpdate.id);
             if (!existingUser) {
@@ -127,6 +134,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
             await db.users.put(finalUser);
             const updatedUsers = await refreshUsers();
+            
+            await auditLogService.logAction(currentUser, 'UPDATE_USER', 'user', finalUser.id, `User ${finalUser.name} updated.`);
 
             if (currentUser?.id === finalUser.id) {
                 const fullUser = updatedUsers.find(u => u.id === finalUser.id);
@@ -147,6 +156,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     const addUser = async (userToAdd: Omit<User, 'id'>): Promise<{ success: boolean, messageKey: string }> => {
+        if (!currentUser) return { success: false, messageKey: 'permissionDenied' };
         if (!userToAdd.password) {
             return { success: false, messageKey: 'passwordRequired' };
         }
@@ -161,16 +171,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
          };
          await db.users.add(newUser);
          await refreshUsers();
+         await auditLogService.logAction(currentUser, 'ADD_USER', 'user', newUser.id, `User ${newUser.name} created.`);
          return { success: true, messageKey: 'userAddedSuccess' };
     };
     
     const deleteUser = async (userId: string) => {
+        if (!currentUser) return;
         if (currentUser?.id === userId) {
             showNotification('cannotDeleteSelf', 'error');
             return;
         }
+        const userToDelete = users.find(u => u.id === userId);
         await db.users.delete(userId);
         await refreshUsers();
+        await auditLogService.logAction(currentUser, 'DELETE_USER', 'user', userId, `User ${userToDelete?.name || userId} deleted.`);
         showNotification('userDeleted', 'success');
     };
     
@@ -184,6 +198,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         await db.users.update(userId, { password: newPass });
         await refreshUsers();
+        await auditLogService.logAction(user, 'CHANGE_PASSWORD', 'user', user.id);
         return { success: true, messageKey: 'passwordChanged' };
     };
 
@@ -199,6 +214,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         await db.users.update(user.id, { password: newPass });
         await refreshUsers();
+        await auditLogService.logAction(user, 'RESET_PASSWORD', 'user', user.id);
         return { success: true, messageKey: 'resetPasswordSuccess' };
     };
 
